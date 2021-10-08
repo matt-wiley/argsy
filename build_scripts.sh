@@ -12,7 +12,7 @@ function main() {
             pytest
             ;;
         "bumpversion")
-            
+            bump2version --current-version "$(cat version.txt)" "${1}" version.txt 
             ;;
         "build") 
             python setup.py bdist_wheel 
