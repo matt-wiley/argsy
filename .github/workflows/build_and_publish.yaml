@@ -29,5 +29,6 @@ jobs:
         if: ${{ !cancelled() && !failure() }}
         run: |
           ./build_scripts.sh pip
+          ./build_scripts.sh bumpversion minor
           ./build_scripts.sh build
           ./build_scripts.sh publish ${{ env.pypi_user }} ${{ env.pypi_pass }}

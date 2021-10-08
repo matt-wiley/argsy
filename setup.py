@@ -9,7 +9,7 @@ name="argsy"
 setup(
     name=name,
     author='Matt Wiley',
-    version=open('version.txt','r').read().strip(),
+    version='0.1.0',
     py_modules=[name],
     install_requires=open('requirements/runtime.txt','r').read().split('\n'),
 )
