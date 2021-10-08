@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
 
 function main() {
-    for cmd in "${@}"; do 
-        case "${cmd}" in
-            "clean") 
-                rm -rf build dist *.egg-info
-                ;;
-            "build") 
-                python setup.py bdist_wheel 
-                ;;
-            *);;
-        esac
-    done
+    case "${1}" in
+        "pip")
+            pip install -r requirements/runtime.txt -r requirements/dev.txt 
+            ;;
+        "clean") 
+            rm -rf build dist *.egg-info
+            ;;
+        "test")
+            pytest
+            ;;
+        "build") 
+            python setup.py bdist_wheel 
+            ;;
+        "publish")
+            twine upload dist/* -u "${2}" -p "${3}"
+            ;;
+        *);;
+    esac
 }
 main "${@}"
