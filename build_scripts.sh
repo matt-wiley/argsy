@@ -11,6 +11,9 @@ function main() {
         "test")
             pytest
             ;;
+        "bumpversion")
+            
+            ;;
         "build") 
             python setup.py bdist_wheel 
             ;;
