@@ -8,7 +8,7 @@ jobs:
 #   test:
 #     name: Run Tests
 #     runs-on: ubuntu-latest
-#     container: python:3.9-slim
+#     container: mattwiley/github_actions:python3.9-slim
 #     steps:
 #       - uses: actions/checkout@v2
 #       - name: Run Unit Tests
@@ -19,26 +19,24 @@ jobs:
     # needs: [test]
     name: Build Wheel
     runs-on: ubuntu-latest
-    container: python:3.9-slim
+    container: mattwiley/github_actions:python3.9-slim
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0'
-      # - name: Get Dependencies
-      #   if: ${{ !cancelled() && !failure() }}
-      #   run: |
-      #     ./build_scripts.sh pip
-      - id: next-tag
-        name: Generate Next SemVer Tag
-        uses: anothrNick/github-tag-action@1.36.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          DRY_RUN: true
-      - name: Execute Wheel Build 
+      - name: Get Dependencies
         if: ${{ !cancelled() && !failure() }}
         run: |
-          echo "tag => ${{ steps.next-tag.outputs.tag }}"
-          echo "new_tag => ${{ steps.next-tag.outputs.new_tag }}"
-          echo "part => ${{ steps.next-tag.outputs.part }}"
-          # ./build_scripts.sh build
+          ./build_scripts.sh pip
+      - id: next-version
+        name: Generate Next SemVer Tag
+        if: ${{ !cancelled() && !failure() }}
+        run: |
+          echo ::set-output name=new_version::$(./build_scripts.sh next_version minor)
+      - name: Execute Wheel Build 
+        if: ${{ !cancelled() && !failure() }}
+        env:
+          new_version: ${{ steps.next-version.outputs.new_version }}
+        run: |
+          ./build_scripts.sh build "${{ env.new_version }}"
+          ./build_scripts.sh tag "${{ env.new_version }}"
