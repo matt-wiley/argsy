@@ -4,24 +4,19 @@ on:
     branches-ignore:
       - "main"
 
-env:
-  BUMP_TAG_WITH_V: true
-  BUMP_TAG_PRERELEASE_SUFFIX: dev
-  BUMP_TAG_DEFAULT_BUMP: patch
-
 jobs:
-#   test:
-#     name: Run Tests
-#     runs-on: ubuntu-latest
-#     container: mattwiley/github_actions:python3.9-slim
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Run Unit Tests
-#         run: | 
-#           ./build_scripts.sh pip
-#           ./build_scripts.sh test
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    container: mattwiley/github_actions:python3.9-slim
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: | 
+          ./build_scripts.sh pip
+          ./build_scripts.sh test
   build:
-    # needs: [test]
+    needs: [test]
     name: Build Wheel
     runs-on: ubuntu-latest
     container: mattwiley/github_actions:python3.9-slim
@@ -37,25 +32,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
-          PRERELEASE_SUFFIX: ${{ env.BUMP_TAG_PRERELEASE_SUFFIX }}
-          DEFAULT_BUMP: ${{ env.BUMP_TAG_DEFAULT_BUMP }}
+          DEFAULT_BUMP: patch
           DRY_RUN: true
       - name: Build Artifact
         if: ${{ !cancelled() && !failure() }}
-        env:
-          new_version: ${{ steps.bump-version.outputs.new_tag }}
         run: |
-          ./build_scripts.sh build "${{ env.new_version }}"
-      - name: Publish Artifact
-        if: ${{ !cancelled() && !failure() }}
-        run: |
-          ./build_scripts.sh publish __token__ "${{ secrets.PYPI_PUBLISH_TOKEN }}"
-      - id: push-tag
-        name: Push New Tag
-        uses: anothrNick/github-tag-action@1.36.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          PRERELEASE_SUFFIX: ${{ env.BUMP_TAG_PRERELEASE_SUFFIX }}
-          DEFAULT_BUMP: ${{ env.BUMP_TAG_DEFAULT_BUMP }}
+          ./build_scripts.sh build "${{ steps.bump-version.outputs.new_tag }}"
         
