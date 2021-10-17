@@ -4,6 +4,11 @@ on:
     branches-ignore:
       - "main"
 
+env:
+  BUMP_TAG_WITH_V: true
+  BUMP_TAG_PRERELASE_SUFFIX: dev
+  BUMP_TAG_DEFAULT_BUMP: patch
+
 jobs:
 #   test:
 #     name: Run Tests
@@ -22,21 +27,35 @@ jobs:
     container: mattwiley/github_actions:python3.9-slim
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: '0'
       - name: Get Dependencies
         if: ${{ !cancelled() && !failure() }}
         run: |
           ./build_scripts.sh pip
-      - id: next-version
-        name: Generate Next SemVer Tag
-        if: ${{ !cancelled() && !failure() }}
-        run: |
-          echo ::set-output name=new_version::$(./build_scripts.sh next_version minor)
-      - name: Execute Wheel Build 
+      - id: bump-version
+        name: Bump Version
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          PRERELEASE_SUFFIX: ${{ env.BUMP_TAG_PRERELEASE_SUFFIX }}
+          DEFAULT_BUMP: ${{ env.BUMP_TAG_DEFAULT_BUMP }}
+          DRY_RUN: true
+      - name: Build Artifact
         if: ${{ !cancelled() && !failure() }}
         env:
-          new_version: ${{ steps.next-version.outputs.new_version }}
+          new_version: ${{ steps.bump-version.outputs.new_tag }}
         run: |
           ./build_scripts.sh build "${{ env.new_version }}"
-          ./build_scripts.sh tag "${{ env.new_version }}"
+      - name: Publish Artifact
+        if: ${{ !cancelled() && !failure() }}
+        run: |
+          ./build_scripts.sh publish __token__ "${{ secrets.PYPI_PUBLISH_TOKEN }}"
+      - id: push-tag
+        name: Push New Tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          PRERELEASE_SUFFIX: ${{ env.BUMP_TAG_PRERELEASE_SUFFIX }}
+          DEFAULT_BUMP: ${{ env.BUMP_TAG_DEFAULT_BUMP }}
+        
