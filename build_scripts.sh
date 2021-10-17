@@ -13,7 +13,10 @@ function main() {
             ;;
         "build") 
             version_string="${2}"
-            bump2version --current-version "0.1.0" --new-version "${version_string}" --allow-dirty minor setup.py
+            # The use of "minor" (or patch or major) is necessary in order for 
+            # the version bump to occur, but since we are providing both the 
+            # current and new versions the version_string overrides this argument.
+            bump2version --current-version "0.0.0" --new-version "${version_string}" --allow-dirty minor setup.py 
             python setup.py bdist_wheel
             ;;
         "publish")

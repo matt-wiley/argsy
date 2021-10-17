@@ -6,7 +6,7 @@ on:
 
 env:
   BUMP_TAG_WITH_V: true
-  BUMP_TAG_PRERELASE_SUFFIX: dev
+  BUMP_TAG_PRERELEASE_SUFFIX: dev
   BUMP_TAG_DEFAULT_BUMP: patch
 
 jobs:
