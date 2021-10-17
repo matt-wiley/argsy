@@ -1,0 +1,41 @@
+name: Build Package
+on:
+  push:
+    branches-ignore:
+      - "main"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    container: mattwiley/github_actions:python3.9-slim
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Unit Tests
+        run: | 
+          ./build_scripts.sh pip
+          ./build_scripts.sh test
+  build:
+    needs: [test]
+    name: Build Wheel
+    runs-on: ubuntu-latest
+    container: mattwiley/github_actions:python3.9-slim
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Dependencies
+        if: ${{ !cancelled() && !failure() }}
+        run: |
+          ./build_scripts.sh pip
+      - id: bump-version
+        name: Bump Version
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
+          DRY_RUN: true
+      - name: Build Artifact
+        if: ${{ !cancelled() && !failure() }}
+        run: |
+          ./build_scripts.sh build "${{ steps.bump-version.outputs.new_tag }}"
+        
