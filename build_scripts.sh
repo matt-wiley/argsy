@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 function main() {
     case "${1}" in
         "pip")
