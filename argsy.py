@@ -1,5 +1,5 @@
 import argparse
-import sys
+from typing import List
 import yaml
 
 class Argsy:
@@ -17,6 +17,8 @@ class Argsy:
             self._arg_def_dict = config_dict
         else:
             raise Exception('ERROR: No configuration provided.')
+
+        self._build_argparser()
 
     def _parse_args_dict(self, parser: argparse.ArgumentParser, args: dict):
         for arg_name in args.keys():
@@ -40,21 +42,21 @@ class Argsy:
                     nargs=arg.get('nargs') if arg.get('nargs') else None,
                 )
 
-    def _load_and_parse_args(self, user_args:list):
+    def _build_argparser(self):
         program = self._arg_def_dict.get('program')
-        user_args_parser = argparse.ArgumentParser(
+        self._main_parser = argparse.ArgumentParser(
             prog=program.get('name'),
             description=program.get('description'),
         )
 
         top_level_args = program.get('args')
         if top_level_args is not None:
-            self._parse_args_dict(user_args_parser, top_level_args)
+            self._parse_args_dict(self._main_parser, top_level_args)
 
         subcommands = program.get('subcommands')
         subcommand_names = []
         if subcommands is not None:
-            subparsers = user_args_parser.add_subparsers(help=subcommands.get('help'))
+            subparsers = self._main_parser.add_subparsers(help=subcommands.get('help'))
             subcommands_dict = subcommands.get('cmds')
             if subcommands_dict is not None:
                 subcommand_names = list(subcommands_dict.keys())
@@ -63,18 +65,24 @@ class Argsy:
                     subcommand_parser = subparsers.add_parser(cmd_name, help=cmd.get('help'))
                     self._parse_args_dict(subcommand_parser, cmd.get('args'))
                     self._sub_parsers[cmd_name] = subcommand_parser
-        
-        commands_found = list(set(user_args) & set(subcommand_names))
+
+    def _parse_args(self, user_args: list):
+        # Intersect the user args list and the subcommand names to see what commands were provided
+        commands_found = list(set(user_args) & set(self._sub_parsers.keys()))
         user_subcommand = commands_found[0] if len(commands_found) > 0 else None
 
         return {
             'cmd': user_subcommand,
-            'args': user_args_parser.parse_args(user_args).__dict__
+            'args': self._main_parser.parse_args(user_args).__dict__
         }
+        
 
 
-    def parse_args(self):
-        return self._load_and_parse_args(sys.argv[1:])
+    def parse_args(self, args: List, print_result = False):
+        parse_result = self._parse_args(args)
+        if print_result:
+            print(parse_result)
+        return parse_result
 
     def show_usage(self, cmd: str = None):
         if cmd is not None:
