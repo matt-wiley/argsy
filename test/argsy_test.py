@@ -1,6 +1,4 @@
-from email.policy import default
-import sys 
-from argsy import Argsy
+from argsy.argsy_lib import Argsy
 
 
 CLI_ARGS=dict(
