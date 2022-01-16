@@ -1,4 +1,4 @@
-from argsy.argsy_lib import Argsy
+from lib.argsy import Argsy
 
 
 CLI_ARGS=dict(
