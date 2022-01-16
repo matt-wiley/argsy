@@ -9,7 +9,9 @@ function main() {
             rm -rf build dist *.egg-info
             ;;
         "test")
-            pytest
+            find ./ -regex ".*/__pycache__" | grep -vE "^\./\.venv" | xargs rm -rf
+            find ./ -regex ".*/\.pytest_cache" | grep -vE "\./\.venv" | xargs rm -rf
+            pytest -rA
             ;;
         "build") 
             version_string="${2}"
