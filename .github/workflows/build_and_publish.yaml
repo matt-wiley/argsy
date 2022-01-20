@@ -25,7 +25,7 @@ jobs:
       - name: Get Dependencies
         if: ${{ !cancelled() && !failure() }}
         run: |
-          ./build_scripts.sh pip
+          ./build_scripts.sh refresh
       - id: bump-version
         name: Bump Version
         uses: anothrNick/github-tag-action@1.36.0
