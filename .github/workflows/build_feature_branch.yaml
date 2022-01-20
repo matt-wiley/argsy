@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run Unit Tests
         run: | 
-          ./build_scripts.sh pip
+          ./build_scripts.sh refresh
           ./build_scripts.sh test
   build:
     needs: [test]
