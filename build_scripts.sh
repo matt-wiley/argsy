@@ -2,8 +2,8 @@
 
 function main() {
     case "${1}" in
-        "pip")
-            pip install -r requirements/runtime.txt -r requirements/dev.txt 
+        "refresh")
+            pip install -r requirements.txt -r requirements.dev.txt 
             ;;
         "clean") 
             rm -rf build dist *.egg-info
@@ -11,7 +11,7 @@ function main() {
             find ./ -regex ".*/\.pytest_cache" | grep -vE "\./\.venv" | xargs rm -rf
             ;;
         "test")
-            pytest -rA
+            pytest --cache-clear -rA
             ;;
         "build") 
             version_string="${2}"
@@ -31,6 +31,11 @@ function main() {
         "publish")
             twine upload dist/* -u "${2}" -p "${3}"
             ;;
+        "get_install_requires")
+                while IFS= read -r line; do
+                    printf "\"%s\",\n" "$line"
+                done < requirements.txt
+                ;;
         *);;
     esac
 }
